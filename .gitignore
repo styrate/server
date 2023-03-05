@@ -1,2 +1,3 @@
 db.sqlite3
 */__pycache__/
+GLOBAL_VAR.py
