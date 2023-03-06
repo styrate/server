@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 from GLOBAL_VAR import *
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Additions
-    'main'
+    'main',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -117,7 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -127,4 +129,36 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Additions
 AUTH_USER_MODEL= 'main.User'
-STATIC_URL = '/static/'
+USE_S3 = GV_AWS_USE_S3
+
+if USE_S3:
+    # aws settings
+    ADMIN_MEDIA_PREFIX = '/static/admin/'
+    AWS_ACCESS_KEY_ID = GV_AWS_S3_AK_ID
+    AWS_SECRET_ACCESS_KEY = GV_AWS_S3_AK_SK
+    AWS_STORAGE_BUCKET_NAME = GV_AWS_S3_NAME
+    AWS_QUERYSTRING_AUTH = False
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    # s3 static settings
+    AWS_LOCATION = 'static'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_FILE_OVERWRITE = False  
+    AWS_DEFAULT_ACL = None  
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'  
+else:
+    STATIC_URL = 'static/'
+    # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+'''
+Notes:
+    If s3 is true, the admin page css will be loaded from the bucket.
+'''
